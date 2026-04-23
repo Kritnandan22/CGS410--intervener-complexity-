@@ -1,0 +1,99 @@
+# ============================================================
+# Intervener Complexity in Dependency Grammar
+# Main Configuration File
+# ============================================================
+
+project:
+  name: "Intervener Complexity in Dependency Grammar"
+  version: "1.0.0"
+  random_seed: 42
+
+# ---- Paths --------------------------------------------------
+paths:
+  treebank_root: "./treebanks"          # root dir where UD/SUD .conllu files live
+  output_root:   "./outputs"
+  final_output:  "./final_outputs"
+  log_dir:       "./logs"
+  plot_dir:      "./plots"
+
+# ---- Complexity Score Weights (configurable) ---------------
+complexity_weights:
+  w_arity:        0.35
+  w_subtree_size: 0.25
+  w_depth:        0.20
+  w_pos_weight:   0.20
+
+# POS weights for complexity (higher = more complex)
+pos_weights:
+  VERB:  1.0
+  NOUN:  0.6
+  PROPN: 0.5
+  ADJ:   0.4
+  ADV:   0.3
+  PRON:  0.3
+  DET:   0.2
+  ADP:   0.2
+  CONJ:  0.8
+  SCONJ: 0.9
+  CCONJ: 0.7
+  AUX:   0.3
+  PART:  0.2
+  NUM:   0.3
+  PUNCT: 0.0
+  SYM:   0.1
+  X:     0.5
+  INTJ:  0.2
+  _:     0.3
+
+# ---- Baseline Randomization --------------------------------
+baselines:
+  n_random_samples: 1000   # number of random permutations per sentence
+  max_sentences:    5000   # max sentences to use for baseline (speed)
+
+# ---- Machine Learning --------------------------------------
+ml:
+  test_size:       0.2
+  cv_folds:        5
+  n_jobs:          -1       # use all cores
+  complexity_threshold: 1.5 # threshold for low/high complexity binary label
+  models:
+    logistic_regression:
+      max_iter: 1000
+      C: 1.0
+    random_forest:
+      n_estimators: 100
+      max_depth: 10
+    xgboost:
+      n_estimators: 100
+      max_depth: 6
+      learning_rate: 0.1
+    mlp:
+      hidden_layer_sizes: [128, 64]
+      max_iter: 200
+
+# ---- LLM Generation ----------------------------------------
+llm:
+  model:       "gpt2"
+  n_sentences: 200          # sentences to generate
+  max_length:  80
+  temperature: 0.9
+
+# ---- Visualization -----------------------------------------
+visualization:
+  dpi:        150
+  figsize:    [10, 6]
+  style:      "seaborn-v0_8-whitegrid"
+  palette:    "tab20"
+  save_format: "png"
+
+# ---- Processing --------------------------------------------
+processing:
+  batch_size:          500    # sentences per processing batch
+  min_dep_distance:    1      # ignore zero-distance
+  min_sentence_length: 3
+  max_sentence_length: 150
+
+# ---- Logging -----------------------------------------------
+logging:
+  level:   "INFO"
+  format:  "%(asctime)s | %(levelname)s | %(name)s | %(message)s"

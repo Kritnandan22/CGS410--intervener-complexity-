@@ -1,0 +1,392 @@
+# ============================================================
+# Language Configuration — 40 Languages
+# Maps each language to UD treebank ID, typology, and metadata
+# ============================================================
+# Treebank filenames follow UD convention:
+#   <lang_code>_<treebank>-ud-train.conllu  (or test/dev)
+# Set 'treebank_file' to relative path under paths.treebank_root
+# ============================================================
+
+languages:
+
+  # ── SVO ─────────────────────────────────────────────────
+  en:
+    name: "English"
+    typology: "SVO"
+    family: "Indo-European"
+    treebank: "UD_English-EWT"
+    conllu_glob: "UD_English-EWT/*.conllu"
+    word_order: "SVO"
+    contributor: "Abhijit Dalai"
+
+  fr:
+    name: "French"
+    typology: "SVO"
+    family: "Indo-European"
+    treebank: "UD_French-GSD"
+    conllu_glob: "UD_French-GSD/*.conllu"
+    word_order: "SVO"
+    contributor: "Abhijit Dalai"
+
+  es:
+    name: "Spanish"
+    typology: "SVO"
+    family: "Indo-European"
+    treebank: "UD_Spanish-GSD"
+    conllu_glob: "UD_Spanish-GSD/*.conllu"
+    word_order: "SVO"
+    contributor: "Abhijit Dalai"
+
+  pt:
+    name: "Portuguese"
+    typology: "SVO"
+    family: "Indo-European"
+    treebank: "UD_Portuguese-GSD"
+    conllu_glob: "UD_Portuguese-GSD/*.conllu"
+    word_order: "SVO"
+    contributor: "Abhijit Dalai"
+
+  it:
+    name: "Italian"
+    typology: "SVO"
+    family: "Indo-European"
+    treebank: "UD_Italian-ISDT"
+    conllu_glob: "UD_Italian-ISDT/*.conllu"
+    word_order: "SVO"
+    contributor: "Abhijit Dalai"
+
+  de:
+    name: "German"
+    typology: "SVO"
+    family: "Indo-European"
+    treebank: "UD_German-GSD"
+    conllu_glob: "UD_German-GSD/*.conllu"
+    word_order: "SVO_V2"
+    contributor: "Abhijit Dalai"
+
+  nl:
+    name: "Dutch"
+    typology: "SVO"
+    family: "Indo-European"
+    treebank: "UD_Dutch-Alpino"
+    conllu_glob: "UD_Dutch-Alpino/*.conllu"
+    word_order: "SVO_V2"
+    contributor: "Abhijit Dalai"
+
+  sv:
+    name: "Swedish"
+    typology: "SVO"
+    family: "Indo-European"
+    treebank: "UD_Swedish-Talbanken"
+    conllu_glob: "UD_Swedish-Talbanken/*.conllu"
+    word_order: "SVO"
+    contributor: "Kritnandan"
+
+  da:
+    name: "Danish"
+    typology: "SVO"
+    family: "Indo-European"
+    treebank: "UD_Danish-DDT"
+    conllu_glob: "UD_Danish-DDT/*.conllu"
+    word_order: "SVO"
+    contributor: "Kritnandan"
+
+  "no":
+    name: "Norwegian"
+    typology: "SVO"
+    family: "Indo-European"
+    treebank: "UD_Norwegian-Bokmaal"
+    conllu_glob: "UD_Norwegian-Bokmaal/*.conllu"
+    word_order: "SVO"
+    contributor: "Kritnandan"
+
+  zh:
+    name: "Chinese"
+    typology: "SVO"
+    family: "Sino-Tibetan"
+    treebank: "UD_Chinese-GSD"
+    conllu_glob: "UD_Chinese-GSD/*.conllu"
+    word_order: "SVO"
+    contributor: "Kritnandan"
+
+  id:
+    name: "Indonesian"
+    typology: "SVO"
+    family: "Austronesian"
+    treebank: "UD_Indonesian-GSD"
+    conllu_glob: "UD_Indonesian-GSD/*.conllu"
+    word_order: "SVO"
+    contributor: "Kritnandan"
+
+  vi:
+    name: "Vietnamese"
+    typology: "SVO"
+    family: "Austro-Asiatic"
+    treebank: "UD_Vietnamese-VTB"
+    conllu_glob: "UD_Vietnamese-VTB/*.conllu"
+    word_order: "SVO"
+    contributor: "Kritnandan"
+
+  th:
+    name: "Thai"
+    typology: "SVO"
+    family: "Tai-Kadai"
+    treebank: "UD_Thai-PUD"
+    conllu_glob: "UD_Thai-PUD/*.conllu"
+    word_order: "SVO"
+    contributor: "Kritnandan"
+
+  yo:
+    name: "Yoruba"
+    typology: "SVO"
+    family: "Niger-Congo"
+    treebank: "UD_Yoruba-YTB"
+    conllu_glob: "UD_Yoruba-YTB/*.conllu"
+    word_order: "SVO"
+    contributor: "Kritnandan"
+
+  wo:
+    name: "Wolof"
+    typology: "SVO"
+    family: "Niger-Congo"
+    treebank: "UD_Wolof-WTB"
+    conllu_glob: "UD_Wolof-WTB/*.conllu"
+    word_order: "SVO"
+    contributor: "Asif Nawaz"
+
+  ca:
+    name: "Catalan"
+    typology: "SVO"
+    family: "Indo-European"
+    treebank: "UD_Catalan-AnCora"
+    conllu_glob: "UD_Catalan-AnCora/*.conllu"
+    word_order: "SVO"
+    contributor: "Asif Nawaz"
+
+  gl:
+    name: "Galician"
+    typology: "SVO"
+    family: "Indo-European"
+    treebank: "UD_Galician-CTG"
+    conllu_glob: "UD_Galician-CTG/*.conllu"
+    word_order: "SVO"
+    contributor: "Asif Nawaz"
+
+  # ── SOV ─────────────────────────────────────────────────
+  hi:
+    name: "Hindi"
+    typology: "SOV"
+    family: "Indo-European"
+    treebank: "UD_Hindi-HDTB"
+    conllu_glob: "UD_Hindi-HDTB/*.conllu"
+    word_order: "SOV"
+    contributor: "Asif Nawaz"
+
+  ja:
+    name: "Japanese"
+    typology: "SOV"
+    family: "Japonic"
+    treebank: "UD_Japanese-GSD"
+    conllu_glob: "UD_Japanese-GSD/*.conllu"
+    word_order: "SOV"
+    contributor: "Asif Nawaz"
+
+  ko:
+    name: "Korean"
+    typology: "SOV"
+    family: "Koreanic"
+    treebank: "UD_Korean-GSD"
+    conllu_glob: "UD_Korean-GSD/*.conllu"
+    word_order: "SOV"
+    contributor: "Asif Nawaz"
+
+  tr:
+    name: "Turkish"
+    typology: "SOV"
+    family: "Turkic"
+    treebank: "UD_Turkish-IMST"
+    conllu_glob: "UD_Turkish-IMST/*.conllu"
+    word_order: "SOV"
+    contributor: "Asif Nawaz"
+
+  fa:
+    name: "Persian"
+    typology: "SOV"
+    family: "Indo-European"
+    treebank: "UD_Persian-Seraji"
+    conllu_glob: "UD_Persian-Seraji/*.conllu"
+    word_order: "SOV"
+    contributor: "Saurabh Kumar"
+
+  bn:
+    name: "Bengali"
+    typology: "SOV"
+    family: "Indo-European"
+    treebank: "UD_Bengali-BRU"
+    conllu_glob: "UD_Bengali-BRU/*.conllu"
+    word_order: "SOV"
+    contributor: "Saurabh Kumar"
+
+  ta:
+    name: "Tamil"
+    typology: "SOV"
+    family: "Dravidian"
+    treebank: "UD_Tamil-TTB"
+    conllu_glob: "UD_Tamil-TTB/*.conllu"
+    word_order: "SOV"
+    contributor: "Saurabh Kumar"
+
+  te:
+    name: "Telugu"
+    typology: "SOV"
+    family: "Dravidian"
+    treebank: "UD_Telugu-MTG"
+    conllu_glob: "UD_Telugu-MTG/*.conllu"
+    word_order: "SOV"
+    contributor: "Saurabh Kumar"
+
+  mr:
+    name: "Marathi"
+    typology: "SOV"
+    family: "Indo-European"
+    treebank: "UD_Marathi-UFAL"
+    conllu_glob: "UD_Marathi-UFAL/*.conllu"
+    word_order: "SOV"
+    contributor: "Saurabh Kumar"
+
+  ml:
+    name: "Malayalam"
+    typology: "SOV"
+    family: "Dravidian"
+    treebank: "UD_Malayalam-UFAL"
+    conllu_glob: "UD_Malayalam-UFAL/*.conllu"
+    word_order: "SOV"
+    contributor: "Saurabh Kumar"
+
+  gu:
+    name: "Gujarati"
+    typology: "SOV"
+    family: "Indo-European"
+    treebank: "UD_Gujarati-GujTB"
+    conllu_glob: "UD_Gujarati-GujTB/*.conllu"
+    word_order: "SOV"
+    contributor: "Saurabh Kumar"
+
+  eu:
+    name: "Basque"
+    typology: "SOV"
+    family: "Language isolate"
+    treebank: "UD_Basque-BDT"
+    conllu_glob: "UD_Basque-BDT/*.conllu"
+    word_order: "SOV"
+    contributor: "Midhun Manoj"
+
+  # ── Free / Mixed ─────────────────────────────────────────
+  hu:
+    name: "Hungarian"
+    typology: "Free"
+    family: "Uralic"
+    treebank: "UD_Hungarian-Szeged"
+    conllu_glob: "UD_Hungarian-Szeged/*.conllu"
+    word_order: "Free_SOV"
+    contributor: "Midhun Manoj"
+
+  fi:
+    name: "Finnish"
+    typology: "Free"
+    family: "Uralic"
+    treebank: "UD_Finnish-TDT"
+    conllu_glob: "UD_Finnish-TDT/*.conllu"
+    word_order: "Free_SVO"
+    contributor: "Midhun Manoj"
+
+  ru:
+    name: "Russian"
+    typology: "Free"
+    family: "Indo-European"
+    treebank: "UD_Russian-SynTagRus"
+    conllu_glob: "UD_Russian-SynTagRus/*.conllu"
+    word_order: "Free"
+    contributor: "Midhun Manoj"
+
+  pl:
+    name: "Polish"
+    typology: "Free"
+    family: "Indo-European"
+    treebank: "UD_Polish-LFG"
+    conllu_glob: "UD_Polish-LFG/*.conllu"
+    word_order: "Free"
+    contributor: "Midhun Manoj"
+
+  cs:
+    name: "Czech"
+    typology: "Free"
+    family: "Indo-European"
+    treebank: "UD_Czech-PDT"
+    conllu_glob: "UD_Czech-PDT/*.conllu"
+    word_order: "Free"
+    contributor: "Midhun Manoj"
+
+  et:
+    name: "Estonian"
+    typology: "Free"
+    family: "Uralic"
+    treebank: "UD_Estonian-EDT"
+    conllu_glob: "UD_Estonian-EDT/*.conllu"
+    word_order: "Free_SVO"
+    contributor: "Midhun Manoj"
+
+  # ── VSO ─────────────────────────────────────────────────
+  ar:
+    name: "Arabic"
+    typology: "VSO"
+    family: "Afro-Asiatic"
+    treebank: "UD_Arabic-PADT"
+    conllu_glob: "UD_Arabic-PADT/*.conllu"
+    word_order: "VSO"
+    contributor: "Kritnandan"
+
+  ga:
+    name: "Irish"
+    typology: "VSO"
+    family: "Indo-European"
+    treebank: "UD_Irish-IDT"
+    conllu_glob: "UD_Irish-IDT/*.conllu"
+    word_order: "VSO"
+    contributor: "Asif Nawaz"
+
+  cy:
+    name: "Welsh"
+    typology: "VSO"
+    family: "Indo-European"
+    treebank: "UD_Welsh-CCG"
+    conllu_glob: "UD_Welsh-CCG/*.conllu"
+    word_order: "VSO"
+    contributor: "Saurabh Kumar"
+
+  tl:
+    name: "Tagalog"
+    typology: "VSO"
+    family: "Austronesian"
+    treebank: "UD_Tagalog-TRG"
+    conllu_glob: "UD_Tagalog-TRG/*.conllu"
+    word_order: "VSO_VOS"
+    contributor: "Saurabh Kumar"
+
+# ── Contributor assignments (for distributed execution) ────
+contributors:
+  "Abhijit Dalai":
+    roll: "220030"
+    languages: [en, fr, es, pt, it, de, nl]
+  "Kritnandan":
+    roll: "220550"
+    languages: [sv, da, no, zh, id, vi, th, yo, ar]
+  "Asif Nawaz":
+    roll: "220246"
+    languages: [wo, ca, gl, hi, ja, ko, tr, ga]
+  "Saurabh Kumar":
+    roll: "220989"
+    languages: [fa, bn, ta, te, mr, ml, gu, cy, tl]
+  "Midhun Manoj":
+    roll: "220647"
+    languages: [eu, hu, fi, ru, pl, cs, et]
