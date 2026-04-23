@@ -64,17 +64,6 @@ CGS410/
 
 ---
 
-## Contributor Language Assignments
-
-| Contributor | Roll | Languages |
-|-------------|------|-----------|
-| Abhijit Dalai | 220030 | en, fr, es, pt, it, de, nl |
-| Kritnandan | 220550 | sv, da, no, zh, id, vi, th, yo, ar |
-| Asif Nawaz | 220246 | wo, ca, gl, hi, ja, ko, tr, ga |
-| Saurabh Kumar | 220989 | fa, bn, ta, te, mr, kn, gu, cy, tl |
-| Midhun Manoj | 220647 | eu, hu, fi, ru, pl, cs, et |
-
----
 
 ## Step-by-Step Instructions for Each Contributor
 
