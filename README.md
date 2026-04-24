@@ -1,7 +1,6 @@
 # Intervener Complexity in Dependency Grammar
 ## A Cross-Linguistic Computational Study — CGS410
 
-> **5 contributors · 40 languages · Fully automated · Reproducible**
 
 ---
 
