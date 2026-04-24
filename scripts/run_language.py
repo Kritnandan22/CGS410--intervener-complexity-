@@ -212,14 +212,20 @@ def run_language(
         baseline_cfg = cfg.get("baselines", {})
 
         # a) fully random baseline
+        # AUDIT FIX (2026-04-24): Removed hard min() caps that silently capped
+        # n_random_samples at 100 and max_sentences at 500, producing ~50,000
+        # permutations per language — 100x fewer than the documented 5,000,000.
+        # The code now respects config values directly (defaults: 1000 samples,
+        # 5000 max_sentences → ~5M permutations as documented).
+        # Reference: Audit §4.3 (Flaw 3a).
         baseline = RandomTreeBaseline(
             scorer=scorer,
-            n_samples=min(baseline_cfg.get("n_random_samples", 100), 100),
+            n_samples=baseline_cfg.get("n_random_samples", 1000),
             seed=seed,
         )
         random_stats = baseline.corpus_stats(
             sentences,
-            max_sentences=min(baseline_cfg.get("max_sentences", 500), 500),
+            max_sentences=baseline_cfg.get("max_sentences", 5000),
         )
         logger.info("Random stats: %s", random_stats)
 
@@ -260,9 +266,51 @@ def run_language(
         gc_zscores["metric"] = gc_zscores["metric"] + "_vs_grammar_constrained"
         zscore_df = pd.concat([zscore_df, gc_zscores], ignore_index=True)
 
+        # d) projective baseline (Futrell et al. 2015 method)
+        # AUDIT FIX (2026-04-24) — Fix 19: ProjectiveBaseline was imported but never called.
+        # Projective permutations preserve no-crossing-arc constraint, producing
+        # linguistically plausible alternatives. This is the standard approach from
+        # Futrell et al. (2015), stronger than word-order shuffling.
+        logger.info("Computing projective baseline (Futrell et al. method)...")
+        proj_baseline = ProjectiveBaseline(
+            scorer=scorer,
+            n_samples=baseline_cfg.get("n_projective_samples", 200),
+            seed=seed,
+        )
+        proj_stats = proj_baseline.corpus_stats(
+            sentences,
+            max_sentences=baseline_cfg.get("max_sentences_projective", 1000),
+        )
+        logger.info("Projective stats: %s", proj_stats)
+        if proj_stats.get("proj_mean_complexity", 0) > 0:
+            proj_zscores = tester.compute_zscores(language, features_df, {
+                "random_mean_complexity": proj_stats.get("proj_mean_complexity", 0),
+                "random_std_complexity":  proj_stats.get("proj_std_complexity", 1),
+                "random_mean_distance":   proj_stats.get("proj_mean_distance", 0),
+                "random_std_distance":    proj_stats.get("proj_std_distance", 1),
+            })
+            proj_zscores["metric"] = proj_zscores["metric"] + "_vs_projective"
+            zscore_df = pd.concat([zscore_df, proj_zscores], ignore_index=True)
+
+        # e) per-sentence z-scores with bootstrap 95% CI (Futrell et al. 2015 method)
+        # AUDIT FIX (2026-04-24) — Fix 13/17: Corpus-level z-scores treat the whole
+        # corpus as one data point. Per-sentence z-scores preserve sentence independence
+        # and allow proper CI estimation via bootstrap resampling.
+        logger.info("Computing per-sentence z-scores with bootstrap CIs...")
+        per_sent_result = tester.per_sentence_zscores_with_ci(
+            language=language,
+            sentences=sentences,
+            features_df=features_df,
+            baseline=baseline,
+            n_sentences_sample=baseline_cfg.get("n_sentences_per_sent_zscore", 200),
+            n_bootstrap=baseline_cfg.get("n_bootstrap_ci", 1000),
+            seed=seed,
+        )
+
         logger.info("Z-scores:\n%s", zscore_df.to_string(index=False))
     else:
         logger.info("Skipping baseline (--skip-baseline)")
+        per_sent_result = {}
 
     # ── 8. Hypothesis tests (logged, not saved to separate CSV) ─────
     tester = HypothesisTester()
@@ -323,6 +371,9 @@ def run_language(
                     rows = build_feature_rows(sent, tree, scorer, "en_gpt2", min_dep)
                     gpt2_rows.extend(rows)
                 gpt2_df_feat = pd.DataFrame(gpt2_rows)
+                # Ensure the GPT-2 features are saved so the plotting script can find them
+                os.makedirs("final_outputs/global_stats", exist_ok=True)
+                gpt2_df_feat.to_csv("final_outputs/global_stats/gpt2_features.csv", index=False)
 
             # BERT
             logger.info("Generating BERT sentences...")
@@ -345,6 +396,19 @@ def run_language(
             if not bert_df_feat.empty:
                 comp_bert = comparator.compare(features_df, bert_df_feat, language)
                 logger.info("BERT comparison: %s", comp_bert)
+
+            # AUDIT FIX Fix 10: shuffled-text control — establishes upper-bound on divergence
+            logger.info("Computing shuffled-text control baseline (Fix 10)...")
+            shuffled_ctrl = comparator.shuffled_text_control(features_df)
+            if not gpt2_df_feat.empty and shuffled_ctrl:
+                interp_df = comparator.interpret_llm_vs_shuffled(comp_gpt2, shuffled_ctrl, "GPT-2")
+                if not interp_df.empty:
+                    llm_out_dir = os.path.join(
+                        cfg.get("paths", {}).get("output_root", "outputs"), language)
+                    os.makedirs(llm_out_dir, exist_ok=True)
+                    interp_df.to_csv(
+                        os.path.join(llm_out_dir, "llm_shuffled_comparison.csv"), index=False)
+                    logger.info("Saved llm_shuffled_comparison.csv")
 
             # generate comparison plots
             if not skip_plots:
@@ -382,6 +446,20 @@ def run_language(
         logger.info("Skipping ml_results.csv write (no ML data — preserving existing)")
     if not zscore_df.empty:
         writer.write_zscore_results(zscore_df, language)
+
+    # Write per-sentence z-score outputs
+    if per_sent_result:
+        output_root = cfg["paths"]["output_root"]
+        lang_dir = os.path.join(output_root, language)
+        os.makedirs(lang_dir, exist_ok=True)
+        if "per_sentence" in per_sent_result and not per_sent_result["per_sentence"].empty:
+            per_sent_result["per_sentence"].to_csv(
+                os.path.join(lang_dir, "per_sentence_zscores.csv"), index=False)
+            logger.info("Saved per_sentence_zscores.csv")
+        if "summary" in per_sent_result and not per_sent_result["summary"].empty:
+            per_sent_result["summary"].to_csv(
+                os.path.join(lang_dir, "zscore_ci_summary.csv"), index=False)
+            logger.info("Saved zscore_ci_summary.csv")
 
     elapsed = time.time() - start_time
     logger.info("=" * 60)

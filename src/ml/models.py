@@ -18,16 +18,17 @@ from sklearn.pipeline import Pipeline
 
 logger = logging.getLogger(__name__)
 
+# AUDIT FIX (2026-04-24): Removed 'arity', 'subtree_size', 'depth' — these are direct
+# components of complexity_score = 0.35*arity + 0.25*subtree_size + 0.20*depth + 0.20*POS.
+# Using them to predict complexity_score > 1.5 is circular data leakage (Kaufman et al. 2012).
+# Features below are INDEPENDENT of the complexity formula — scientifically valid predictors.
 FEATURE_COLS = [
-    "dependency_distance",
-    "arity",
-    "subtree_size",
-    "depth",
-    "direction_enc",
-    "head_upos_enc",
-    "dependent_upos_enc",
-    "intervener_upos_enc",
-    "morph_richness",
+    "dependency_distance",   # linear gap between head & dependent — not in formula
+    "direction_enc",         # left=0, right=1 dependency — not in formula
+    "head_upos_enc",         # POS of head word — not in formula
+    "dependent_upos_enc",    # POS of dependent word — not in formula
+    "intervener_upos_enc",   # POS of intervener — raw POS, not POS_weight used in formula
+    "morph_richness",        # morphological feature count — not in formula
 ]
 
 

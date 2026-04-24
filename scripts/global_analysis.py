@@ -24,6 +24,7 @@ import argparse
 import logging
 import os
 import sys
+from typing import Dict
 
 import numpy as np
 import pandas as pd
@@ -58,10 +59,17 @@ def enrich_with_typology(df: pd.DataFrame, languages_cfg: dict) -> pd.DataFrame:
 
 
 def typology_comparison(summary_df: pd.DataFrame, tester: HypothesisTester):
-    """ANOVA and group stats for each metric by typology."""
+    """ANOVA and group stats for each metric by typology.
+
+    AUDIT FIX (2026-04-24): Unit of analysis is now language (n=40), not token.
+    Token-level pooling (millions of correlated observations) inflates significance.
+    Bonferroni correction applied across 6 simultaneous tests: threshold = 0.05/6 = 0.0083.
+    """
     results = []
     metrics = ["avg_dependency_length", "avg_complexity", "avg_arity",
                "avg_subtree_size", "avg_depth", "avg_efficiency_ratio"]
+    n_tests = len(metrics)
+    bonferroni_threshold = 0.05 / n_tests  # = 0.0083
 
     for metric in metrics:
         if metric not in summary_df.columns:
@@ -75,16 +83,22 @@ def typology_comparison(summary_df: pd.DataFrame, tester: HypothesisTester):
         if len(groups) < 2:
             continue
 
+        n_langs = summary_df["language"].nunique() if "language" in summary_df.columns else len(summary_df)
         anova = tester.anova(*groups.values())
         results.append({
             "metric": metric,
             "f_stat": anova["f_stat"],
             "p_value": anova["p_value"],
             "n_groups": len(groups),
+            "n_languages": n_langs,
+            "unit_of_analysis": "language",
+            "bonferroni_threshold": bonferroni_threshold,
+            "survives_bonferroni": anova["p_value"] < bonferroni_threshold,
             "groups": str(list(groups.keys())),
         })
-        logger.info("ANOVA %s: F=%.3f p=%.4f", metric,
-                    anova["f_stat"], anova["p_value"])
+        sig_marker = "*** SURVIVES BONFERRONI" if anova["p_value"] < bonferroni_threshold else ""
+        logger.info("ANOVA %s (n=%d langs): F=%.3f p=%.4f %s",
+                    metric, n_langs, anova["f_stat"], anova["p_value"], sig_marker)
     return pd.DataFrame(results)
 
 
@@ -107,6 +121,100 @@ def pairwise_typology(features_df: pd.DataFrame, tester: HypothesisTester):
                 "n1": len(a), "n2": len(b),
             })
     return pd.DataFrame(pairs)
+
+
+def icm_significance_table(zscore_df: pd.DataFrame) -> pd.DataFrame:
+    """Per-language ICM significance classification.
+
+    AUDIT FIX (2026-04-24): Audit §4.2 — the report claimed 'robustly supporting ICM'
+    from mean z=-0.119. In reality, 0/40 languages reach |z|>1.96, and 15/40 contradict ICM.
+    This table provides the honest per-language breakdown.
+    """
+    if zscore_df.empty:
+        return pd.DataFrame()
+
+    comp_z = zscore_df[zscore_df["metric"] == "complexity_score"].copy()
+    dist_z = zscore_df[zscore_df["metric"] == "dependency_distance"].copy()
+    if comp_z.empty:
+        return pd.DataFrame()
+
+    def categorize(z):
+        if z < -1.96: return "Significant ICM (p<0.05)"
+        if z < -0.5:  return "Moderate ICM trend"
+        if z < 0.0:   return "Weak ICM trend"
+        if z < 0.5:   return "Weak contradiction"
+        return "Strong contradiction"
+
+    comp_z["icm_category"] = comp_z["z_score"].apply(categorize)
+    comp_z["supports_icm"] = comp_z["z_score"] < 0
+    comp_z["statistically_significant"] = comp_z["z_score"].abs() > 1.96
+
+    # Merge in DLM z-score for comparison
+    if not dist_z.empty:
+        comp_z = comp_z.merge(
+            dist_z[["language", "z_score"]].rename(columns={"z_score": "dlm_z_score"}),
+            on="language", how="left"
+        )
+
+    summary = {
+        "n_languages": len(comp_z),
+        "n_supporting_icm": int((comp_z["z_score"] < 0).sum()),
+        "n_contradicting_icm": int((comp_z["z_score"] > 0).sum()),
+        "n_significant_icm": int((comp_z["z_score"] < -1.96).sum()),
+        "mean_complexity_z": float(comp_z["z_score"].mean()),
+        "mean_dlm_z": float(dist_z["z_score"].mean()) if not dist_z.empty else float("nan"),
+    }
+    logger.info("ICM Summary: %d supporting, %d contradicting, %d significant (|z|>1.96); mean z=%.3f",
+                summary["n_supporting_icm"], summary["n_contradicting_icm"],
+                summary["n_significant_icm"], summary["mean_complexity_z"])
+    logger.info("DLM mean z=%.3f vs ICM mean z=%.3f (DLM is %.1fx stronger)",
+                summary["mean_dlm_z"], summary["mean_complexity_z"],
+                abs(summary["mean_dlm_z"] / summary["mean_complexity_z"]) if summary["mean_complexity_z"] != 0 else float("nan"))
+    return comp_z, summary
+
+
+def flag_data_anomalies(summary_df: pd.DataFrame, threshold_sd: float = 2.5) -> pd.DataFrame:
+    """Detect and flag statistical outlier languages.
+
+    AUDIT FIX (2026-04-24): Audit §4.7 — Arabic dep_length=30.85 (3x any other),
+    Bengali/Telugu suspiciously low, Tagalog contradicts VSO typology.
+    """
+    if summary_df.empty:
+        return pd.DataFrame()
+
+    anomalies = []
+    metrics = ["avg_dependency_length", "avg_complexity", "avg_arity"]
+    for metric in metrics:
+        if metric not in summary_df.columns:
+            continue
+        col = summary_df[metric].dropna()
+        mean, std = col.mean(), col.std()
+        outliers = summary_df[abs(summary_df[metric] - mean) > threshold_sd * std]
+        for _, row in outliers.iterrows():
+            z = (row[metric] - mean) / std if std > 0 else 0
+            anomalies.append({
+                "language": row.get("language", "?"),
+                "metric": metric,
+                "value": row[metric],
+                "population_mean": round(mean, 4),
+                "z_score": round(z, 3),
+                "direction": "high" if z > 0 else "low",
+                "note": "Outlier detected — verify treebank quality",
+            })
+
+    # Known hardcoded anomalies from audit §4.7
+    known = [
+        {"language": "ar", "metric": "avg_dependency_length", "note": "PADT clitic tokenization inflates distances 3x"},
+        {"language": "bn", "metric": "avg_dependency_length", "note": "Very small treebank — unreliable statistics"},
+        {"language": "te", "metric": "avg_dependency_length", "note": "Very small treebank — unreliable statistics"},
+        {"language": "tl", "metric": "pct_left_deps",       "note": "94.4% left-deps for VSO language — likely annotation artifact (190 sentences)"},
+        {"language": "ko", "metric": "pos_entropy",          "note": "POS entropy 33% below average — agglutinative morphology compression"},
+    ]
+    known_df = pd.DataFrame(known)
+    result = pd.concat([pd.DataFrame(anomalies), known_df], ignore_index=True).drop_duplicates()
+    for _, row in result.iterrows():
+        logger.warning("DATA ANOMALY [%s] %s: %s", row.get("language"), row.get("metric"), row.get("note"))
+    return result
 
 
 def correlation_analysis(summary_df: pd.DataFrame):
@@ -208,10 +316,105 @@ def chi_square_all_metrics(features_df: pd.DataFrame):
     return pd.DataFrame(results)
 
 
+def sensitivity_analysis(
+    features_df: pd.DataFrame,
+    languages_cfg: dict,
+    tester: HypothesisTester,
+) -> pd.DataFrame:
+    """Test ANOVA robustness across different complexity weight combinations.
+
+    AUDIT FIX (2026-04-24) — Fix 15:
+    The complexity formula uses weights (0.35, 0.25, 0.20, 0.20) for
+    (arity, subtree_size, depth, POS_weight). These are arbitrary — not grounded in
+    psycholinguistic data. If results depend critically on these specific weights,
+    the conclusions are fragile. This analysis re-runs the typology ANOVA with 6
+    alternative weight sets and reports whether conclusions hold across all of them.
+    """
+    pos_weights = {
+        "VERB": 1.0, "NOUN": 0.6, "PROPN": 0.5, "ADJ": 0.4,
+        "ADV": 0.3, "PRON": 0.3, "DET": 0.2, "PUNCT": 0.0,
+    }
+    weight_sets = [
+        {"name": "original_0.35-0.25-0.20-0.20", "w_arity": 0.35, "w_sub": 0.25, "w_dep": 0.20, "w_pos": 0.20},
+        {"name": "equal_0.25-0.25-0.25-0.25",    "w_arity": 0.25, "w_sub": 0.25, "w_dep": 0.25, "w_pos": 0.25},
+        {"name": "arity_heavy_0.50-0.20-0.20-0.10","w_arity": 0.50, "w_sub": 0.20, "w_dep": 0.20, "w_pos": 0.10},
+        {"name": "struct_heavy_0.20-0.40-0.30-0.10","w_arity":0.20, "w_sub": 0.40, "w_dep": 0.30, "w_pos": 0.10},
+        {"name": "no_pos_0.35-0.30-0.35-0.00",    "w_arity": 0.35, "w_sub": 0.30, "w_dep": 0.35, "w_pos": 0.00},
+        {"name": "depth_heavy_0.20-0.20-0.50-0.10","w_arity": 0.20, "w_sub": 0.20, "w_dep": 0.50, "w_pos": 0.10},
+    ]
+
+    df = features_df.copy()
+    df["typology"] = df["language"].map(
+        {k: v.get("typology", "") for k, v in languages_cfg.items()}
+    )
+
+    results = []
+    for ws in weight_sets:
+        pos_col = df["intervener_upos"].map(pos_weights).fillna(0.1)
+        df["recomputed_complexity"] = (
+            ws["w_arity"] * df["arity"]
+            + ws["w_sub"]   * df["subtree_size"]
+            + ws["w_dep"]   * df["depth"]
+            + ws["w_pos"]   * pos_col
+        )
+        lang_means = (
+            df.groupby(["language", "typology"])["recomputed_complexity"]
+            .mean()
+            .reset_index()
+        )
+        groups = {
+            typ: grp["recomputed_complexity"].tolist()
+            for typ, grp in lang_means.groupby("typology")
+            if len(grp) >= 2
+        }
+        if len(groups) >= 2:
+            anova = tester.anova(*groups.values())
+            results.append({
+                "weight_set": ws["name"],
+                "w_arity": ws["w_arity"],
+                "w_subtree_size": ws["w_sub"],
+                "w_depth": ws["w_dep"],
+                "w_pos": ws["w_pos"],
+                "anova_f": anova["f_stat"],
+                "anova_p": anova["p_value"],
+                "survives_bonferroni": anova["p_value"] < 0.0083,
+                "significant_p05": anova["p_value"] < 0.05,
+            })
+            logger.info("Sensitivity [%s]: F=%.3f p=%.4f", ws["name"],
+                        anova["f_stat"], anova["p_value"])
+
+    result_df = pd.DataFrame(results)
+    if not result_df.empty:
+        n_sig = result_df["significant_p05"].sum()
+        logger.info("Sensitivity summary: %d/%d weight sets produce significant ANOVA (p<0.05)",
+                    n_sig, len(result_df))
+        if n_sig == 0:
+            logger.warning("SENSITIVITY: No weight set produces significant complexity ANOVA — "
+                           "finding is robust (complexity does not vary by typology regardless of weights)")
+        elif n_sig < len(result_df):
+            logger.warning("SENSITIVITY: Only %d/%d weight sets significant — "
+                           "finding is weight-dependent", n_sig, len(result_df))
+    return result_df
+
+
 def dravidian_focus(features_df: pd.DataFrame, languages_cfg: dict):
-    """Special analysis: Dravidian vs non-Dravidian languages."""
+    """Dravidian vs non-Dravidian: plain Mann-Whitney + ANCOVA controlling for word order.
+
+    AUDIT FIX (2026-04-24) — Fix 14:
+    Dravidian languages (Tamil, Telugu, Malayalam) are all SOV. A plain group comparison
+    conflates the Dravidian family effect with the SOV word-order effect. The ANCOVA
+    controls for word order (SOV/SVO/VSO/Free) as a covariate and tests whether being
+    Dravidian explains additional variance beyond word order alone.
+    Reference: Audit §4.7, §7.3 Fix 14.
+    """
     dravidian = [k for k, v in languages_cfg.items() if v.get("family") == "Dravidian"]
     logger.info("Dravidian languages in dataset: %s", dravidian)
+
+    df = features_df.copy()
+    df["is_dravidian"] = df["language"].isin(dravidian).map({True: "Dravidian", False: "Non-Dravidian"})
+    df["word_order"] = df["language"].map(
+        {k: v.get("typology", "SVO") for k, v in languages_cfg.items()}
+    )
 
     drav = features_df[features_df["language"].isin(dravidian)]
     non_drav = features_df[~features_df["language"].isin(dravidian)]
@@ -225,15 +428,196 @@ def dravidian_focus(features_df: pd.DataFrame, languages_cfg: dict):
         b = non_drav[metric].dropna()
         if len(a) > 1 and len(b) > 1:
             mw = tester.mann_whitney(a, b)
+            d = cohens_d(a, b)
             result[metric] = {
                 "dravidian_mean": float(a.mean()),
                 "other_mean": float(b.mean()),
                 "mann_whitney_u": mw.get("u_stat", float("nan")),
-                "p_value": mw.get("p_value", float("nan")),
-                "cohens_d": cohens_d(a, b),
+                "p_value_unadjusted": mw.get("p_value", float("nan")),
+                "cohens_d": d,
             }
-            logger.info("Dravidian vs other — %s: drav=%.3f other=%.3f p=%.4f",
-                        metric, a.mean(), b.mean(), mw.get("p_value", float("nan")))
+            logger.info("Dravidian vs other — %s: drav=%.3f other=%.3f d=%.3f p=%.4f",
+                        metric, a.mean(), b.mean(), d, mw.get("p_value", float("nan")))
+
+            # ANCOVA: control for word order
+            sample_df = df[["language", metric, "is_dravidian", "word_order"]].dropna()
+            # Use language-level means (n=40) rather than token-level (millions)
+            lang_level = (
+                sample_df.groupby(["language", "is_dravidian", "word_order"])[metric]
+                .mean()
+                .reset_index()
+            )
+            ancova_res = tester.ancova(lang_level, metric, "is_dravidian", "word_order")
+            result[metric]["ancova_f"] = ancova_res.get("f_stat", float("nan"))
+            result[metric]["ancova_p"] = ancova_res.get("p_value", float("nan"))
+            result[metric]["ancova_partial_eta2"] = ancova_res.get("partial_eta_squared", float("nan"))
+            result[metric]["ancova_n_obs"] = ancova_res.get("n_obs", 0)
+
+            p_ancova = ancova_res.get("p_value", float("nan"))
+            if not (p_ancova != p_ancova):  # not NaN
+                if p_ancova < 0.05:
+                    logger.info("  ANCOVA [%s]: Dravidian effect SURVIVES word-order control "
+                                "(F=%.3f p=%.4f partial_eta2=%.3f)",
+                                metric, ancova_res.get("f_stat", 0), p_ancova,
+                                ancova_res.get("partial_eta_squared", 0))
+                else:
+                    logger.warning("  ANCOVA [%s]: Dravidian effect DOES NOT survive word-order "
+                                   "control (F=%.3f p=%.4f) — effect is likely SOV, not Dravidian-specific",
+                                   metric, ancova_res.get("f_stat", 0), p_ancova)
+    return result
+
+
+def icm_full_contradiction_table(zscore_df: pd.DataFrame, results_dir: str) -> pd.DataFrame:
+    """Build and save the full 40-language ICM z-score table with contradiction classification.
+
+    AUDIT FIX (2026-04-24) — Fix 16:
+    The original report did not prominently report the 15 languages contradicting ICM
+    (positive complexity z-scores). Science requires reporting null/negative results.
+    This function produces:
+      1. A sorted table of all 40 languages ranked by z-score (most supportive to most contradictory)
+      2. A separate 'contradicting_languages.csv' listing all languages with z > 0
+      3. Prominent WARNING log entries for each contradicting language
+    Reference: Audit §4.2, §7.3 Fix 16.
+    """
+    if zscore_df.empty:
+        return pd.DataFrame()
+
+    comp_z = zscore_df[zscore_df["metric"] == "complexity_score"].copy()
+    if comp_z.empty:
+        return pd.DataFrame()
+
+    def categorize(z):
+        if z < -1.96:  return "Significant ICM support (p<0.05)"
+        if z < -1.0:   return "Strong ICM trend (|z|>1)"
+        if z < -0.5:   return "Moderate ICM trend"
+        if z < 0.0:    return "Weak ICM trend"
+        if z < 0.5:    return "Weak contradiction"
+        if z < 1.0:    return "Moderate contradiction"
+        return             "Strong contradiction (z>1)"
+
+    comp_z = comp_z.sort_values("z_score").copy()
+    comp_z["icm_category"] = comp_z["z_score"].apply(categorize)
+    comp_z["supports_icm"] = comp_z["z_score"] < 0
+    comp_z["statistically_significant"] = comp_z["z_score"].abs() > 1.96
+
+    # Save full sorted table
+    comp_z.to_csv(os.path.join(results_dir, "icm_full_zscore_table.csv"), index=False)
+
+    # Contradicting languages
+    contradicting = comp_z[comp_z["z_score"] > 0].sort_values("z_score", ascending=False)
+    if not contradicting.empty:
+        contradicting.to_csv(
+            os.path.join(results_dir, "icm_contradicting_languages.csv"), index=False)
+        logger.warning("=" * 60)
+        logger.warning("ICM CONTRADICTION TABLE — %d / %d languages contradict ICM (z > 0):",
+                       len(contradicting), len(comp_z))
+        for _, row in contradicting.iterrows():
+            logger.warning("  %s: z=+%.3f (%s)",
+                           row["language"], row["z_score"], row["icm_category"])
+        logger.warning("Notable: English z=+%.3f — directly contradicts ICM in most-studied language",
+                       comp_z.loc[comp_z["language"] == "en", "z_score"].values[0]
+                       if "en" in comp_z["language"].values else float("nan"))
+        logger.warning("=" * 60)
+
+    # Supporting languages
+    supporting = comp_z[comp_z["z_score"] < 0].sort_values("z_score")
+    n_sig = int((comp_z["z_score"] < -1.96).sum())
+    logger.info("ICM SUPPORT TABLE — %d / %d languages support ICM (z < 0), %d significant:",
+                len(supporting), len(comp_z), n_sig)
+    for _, row in supporting.iterrows():
+        logger.info("  %s: z=%.3f (%s)", row["language"], row["z_score"], row["icm_category"])
+
+    logger.info("Mean z = %.3f (requires < -1.96 for p<0.05 support of ICM)", comp_z["z_score"].mean())
+    return comp_z
+
+
+def investigate_arabic_outlier(
+    summary_df: pd.DataFrame,
+    features_df: pd.DataFrame,
+    tester: HypothesisTester,
+) -> Dict:
+    """Quantify distortion caused by Arabic PADT tokenization outlier.
+
+    AUDIT FIX (2026-04-24) — Fix 12:
+    Arabic shows avg_dep_length=30.85 (3x higher than any other language), likely due to
+    PADT clitic-split tokenization that inflates distances. This function re-runs the key
+    analyses (correlation matrix, typology ANOVA) with Arabic excluded and reports how
+    results change, isolating the outlier's distortion.
+    Reference: Audit §4.7, Liu (2008), De Marneffe et al. (2021).
+    """
+    from typing import Dict as D
+    result: D = {"arabic_stats": {}, "impact_on_correlation": {}, "impact_on_anova": {}}
+
+    # Arabic stats
+    if not summary_df.empty and "language" in summary_df.columns:
+        ar_row = summary_df[summary_df["language"] == "ar"]
+        if not ar_row.empty:
+            result["arabic_stats"] = {
+                "avg_dep_length": float(ar_row["avg_dependency_length"].values[0])
+                    if "avg_dependency_length" in ar_row.columns else float("nan"),
+                "mean_all_languages": float(summary_df["avg_dependency_length"].mean())
+                    if "avg_dependency_length" in summary_df.columns else float("nan"),
+                "z_score_vs_population":
+                    float((ar_row["avg_dependency_length"].values[0]
+                           - summary_df["avg_dependency_length"].mean())
+                          / summary_df["avg_dependency_length"].std())
+                    if "avg_dependency_length" in ar_row.columns else float("nan"),
+                "note": "PADT uses clitic-split tokenization inflating dependency distances ~3x",
+            }
+            logger.warning("ARABIC OUTLIER: avg_dep_length=%.2f vs mean=%.2f (z=%.2f)",
+                           result["arabic_stats"].get("avg_dep_length", 0),
+                           result["arabic_stats"].get("mean_all_languages", 0),
+                           result["arabic_stats"].get("z_score_vs_population", 0))
+
+    # Correlation with vs without Arabic
+    if not summary_df.empty and "avg_dependency_length" in summary_df.columns \
+            and "avg_complexity" in summary_df.columns:
+        from scipy import stats as sp_stats
+        all_corr, _ = sp_stats.pearsonr(
+            summary_df["avg_dependency_length"].dropna(),
+            summary_df["avg_complexity"].dropna(),
+        )
+        no_ar = summary_df[summary_df["language"] != "ar"]
+        no_ar_corr, _ = sp_stats.pearsonr(
+            no_ar["avg_dependency_length"].dropna(),
+            no_ar["avg_complexity"].dropna(),
+        )
+        result["impact_on_correlation"] = {
+            "dep_len_vs_complexity_with_arabic": float(all_corr),
+            "dep_len_vs_complexity_without_arabic": float(no_ar_corr),
+            "delta": float(abs(all_corr - no_ar_corr)),
+        }
+        logger.info("Arabic outlier impact on dep_len~complexity correlation: "
+                    "with=%.3f, without=%.3f (delta=%.3f)",
+                    all_corr, no_ar_corr, abs(all_corr - no_ar_corr))
+
+    # ANOVA with vs without Arabic (using typology column if present)
+    if not summary_df.empty and "typology" in summary_df.columns \
+            and "avg_complexity" in summary_df.columns:
+        def run_anova(df):
+            groups = {
+                typ: grp["avg_complexity"].dropna().tolist()
+                for typ, grp in df.groupby("typology") if len(grp) >= 2
+            }
+            return tester.anova(*groups.values()) if len(groups) >= 2 else {}
+
+        anova_with = run_anova(summary_df)
+        anova_without = run_anova(summary_df[summary_df["language"] != "ar"])
+        result["impact_on_anova"] = {
+            "complexity_anova_p_with_arabic": anova_with.get("p_value", float("nan")),
+            "complexity_anova_p_without_arabic": anova_without.get("p_value", float("nan")),
+            "conclusion": (
+                "Arabic inclusion does not materially change ANOVA outcome"
+                if abs(anova_with.get("p_value", 1) - anova_without.get("p_value", 1)) < 0.05
+                else "Arabic outlier materially affects ANOVA — results should be reported both ways"
+            ),
+        }
+        logger.info("Arabic outlier impact on complexity ANOVA: "
+                    "with_arabic p=%.4f, without_arabic p=%.4f — %s",
+                    result["impact_on_anova"]["complexity_anova_p_with_arabic"],
+                    result["impact_on_anova"]["complexity_anova_p_without_arabic"],
+                    result["impact_on_anova"]["conclusion"])
+
     return result
 
 
@@ -323,16 +707,43 @@ def main():
     results_dir = os.path.join(args.final_dir, "global_stats")
     os.makedirs(results_dir, exist_ok=True)
 
-    # ── A. Typology ANOVA ───────────────────────────────────────────
+    # ── A. Typology ANOVA (language-level, Bonferroni corrected) ────
     if not summary_df.empty and "typology" in summary_df.columns:
-        logger.info("=== Typology ANOVA ===")
+        logger.info("=== Typology ANOVA (language-level, Bonferroni corrected) ===")
         anova_df = typology_comparison(summary_df, tester)
         anova_df.to_csv(os.path.join(results_dir, "typology_anova.csv"), index=False)
+        surviving = anova_df[anova_df["survives_bonferroni"] == True]["metric"].tolist()
+        logger.info("Metrics surviving Bonferroni correction: %s", surviving)
 
-    # ── B. Pairwise typology Mann-Whitney ───────────────────────────
+    # ── A2. ICM Significance Table + Full Contradiction Table ───────
+    if not zscore_df.empty:
+        logger.info("=== ICM Significance Table ===")
+        icm_result = icm_significance_table(zscore_df)
+        if isinstance(icm_result, tuple):
+            icm_table, icm_summary = icm_result
+            icm_table.to_csv(os.path.join(results_dir, "icm_significance_table.csv"), index=False)
+            pd.DataFrame([icm_summary]).to_csv(
+                os.path.join(results_dir, "icm_summary.csv"), index=False)
+
+        # AUDIT FIX Fix 16: full sorted contradiction table
+        logger.info("=== Full ICM Contradiction Table (Fix 16) ===")
+        icm_full_contradiction_table(zscore_df, results_dir)
+
+    # ── A3. Data Anomaly Detection ──────────────────────────────────
+    if not summary_df.empty:
+        logger.info("=== Data Anomaly Detection ===")
+        anomalies_df = flag_data_anomalies(summary_df)
+        if not anomalies_df.empty:
+            anomalies_df.to_csv(os.path.join(results_dir, "data_anomalies.csv"), index=False)
+            logger.info("%d anomalies flagged", len(anomalies_df))
+
+    # ── B. Pairwise typology Mann-Whitney (token-level, for reference only) ──
     if not features_df.empty and "typology" in features_df.columns:
-        logger.info("=== Pairwise Typology Mann-Whitney ===")
+        logger.info("=== Pairwise Typology Mann-Whitney (token-level, for reference) ===")
+        logger.warning("NOTE: Token-level tests inflate significance (n=millions of correlated tokens). "
+                       "Use language-level ANOVA above for primary analysis.")
         pw_df = pairwise_typology(features_df, tester)
+        pw_df["note"] = "Token-level — effect sizes (cohens_d) are more meaningful than p-values"
         pw_df.to_csv(os.path.join(results_dir, "pairwise_typology_mw.csv"), index=False)
 
     # ── C. Correlation matrix ───────────────────────────────────────
@@ -347,9 +758,9 @@ def main():
         lr = left_right_analysis(features_df, tester)
         pd.DataFrame([lr]).to_csv(os.path.join(results_dir, "left_right_analysis.csv"), index=False)
 
-    # ── E. Dravidian special focus ──────────────────────────────────
+    # ── E. Dravidian special focus (with ANCOVA) ───────────────────
     if not features_df.empty:
-        logger.info("=== Dravidian Language Focus ===")
+        logger.info("=== Dravidian Language Focus + ANCOVA (Fix 14) ===")
         drav_results = dravidian_focus(features_df, languages_cfg)
         if drav_results:
             rows = []
@@ -406,6 +817,30 @@ def main():
                 with open(os.path.join(results_dir, "mixed_effects_summary.txt"), "w") as f:
                     f.write(str(model_result.summary()))
                 logger.info("Mixed-effects model saved")
+
+    # ── I-pre. Sensitivity analysis (Fix 15) ───────────────────────
+    if not features_df.empty and "typology" in features_df.columns:
+        logger.info("=== Sensitivity Analysis on Complexity Weights (Fix 15) ===")
+        sens_df = sensitivity_analysis(features_df, languages_cfg, tester)
+        if not sens_df.empty:
+            sens_df.to_csv(os.path.join(results_dir, "sensitivity_analysis.csv"), index=False)
+            logger.info("Sensitivity results saved (%d weight sets tested)", len(sens_df))
+
+    # ── I-pre2. Arabic outlier investigation (Fix 12) ──────────────
+    if not summary_df.empty:
+        logger.info("=== Arabic Outlier Investigation (Fix 12) ===")
+        ar_impact = investigate_arabic_outlier(summary_df, features_df, tester)
+        pd.DataFrame([{
+            **ar_impact.get("arabic_stats", {}),
+            **ar_impact.get("impact_on_correlation", {}),
+            **ar_impact.get("impact_on_anova", {}),
+        }]).to_csv(os.path.join(results_dir, "arabic_outlier_investigation.csv"), index=False)
+
+    # ── I-pre3. Power analysis (Fix 18) ────────────────────────────
+    logger.info("=== Power Analysis n=40 (Fix 18) ===")
+    power_results = tester.power_analysis_n40()
+    pd.DataFrame([power_results]).to_csv(
+        os.path.join(results_dir, "power_analysis.csv"), index=False)
 
     # ── I. Global visualizations ────────────────────────────────────
     logger.info("=== Global Visualizations ===")

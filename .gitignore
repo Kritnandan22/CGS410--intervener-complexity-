@@ -21,3 +21,7 @@ plots/
 
 # Logs
 *.log
+
+# Heavy Data
+treebanks/
+.claude/
