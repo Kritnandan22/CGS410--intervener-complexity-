@@ -1,7 +1,7 @@
 # Intervener Complexity in Dependency Grammar: A Cross-Linguistic Computational Study
 
 **CGS410 Course Project**
-Authors: Abhijit Dalai (220030), Kritnandan (220550), Asif Nawaz (220246), Saurabh Kumar (220989), Midhun Manoj (220647)
+
 
 ---
 

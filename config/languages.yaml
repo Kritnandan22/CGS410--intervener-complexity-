@@ -17,7 +17,7 @@ languages:
     treebank: "UD_English-EWT"
     conllu_glob: "UD_English-EWT/*.conllu"
     word_order: "SVO"
-    contributor: "Abhijit Dalai"
+    contributor: "Team"
 
   fr:
     name: "French"
@@ -26,7 +26,7 @@ languages:
     treebank: "UD_French-GSD"
     conllu_glob: "UD_French-GSD/*.conllu"
     word_order: "SVO"
-    contributor: "Abhijit Dalai"
+    contributor: "Team"
 
   es:
     name: "Spanish"
@@ -35,7 +35,7 @@ languages:
     treebank: "UD_Spanish-GSD"
     conllu_glob: "UD_Spanish-GSD/*.conllu"
     word_order: "SVO"
-    contributor: "Abhijit Dalai"
+    contributor: "Team"
 
   pt:
     name: "Portuguese"
@@ -44,7 +44,7 @@ languages:
     treebank: "UD_Portuguese-GSD"
     conllu_glob: "UD_Portuguese-GSD/*.conllu"
     word_order: "SVO"
-    contributor: "Abhijit Dalai"
+    contributor: "Team"
 
   it:
     name: "Italian"
@@ -53,7 +53,7 @@ languages:
     treebank: "UD_Italian-ISDT"
     conllu_glob: "UD_Italian-ISDT/*.conllu"
     word_order: "SVO"
-    contributor: "Abhijit Dalai"
+    contributor: "Team"
 
   de:
     name: "German"
@@ -62,7 +62,7 @@ languages:
     treebank: "UD_German-GSD"
     conllu_glob: "UD_German-GSD/*.conllu"
     word_order: "SVO_V2"
-    contributor: "Abhijit Dalai"
+    contributor: "Team"
 
   nl:
     name: "Dutch"
@@ -71,7 +71,7 @@ languages:
     treebank: "UD_Dutch-Alpino"
     conllu_glob: "UD_Dutch-Alpino/*.conllu"
     word_order: "SVO_V2"
-    contributor: "Abhijit Dalai"
+    contributor: "Team"
 
   sv:
     name: "Swedish"
@@ -80,7 +80,7 @@ languages:
     treebank: "UD_Swedish-Talbanken"
     conllu_glob: "UD_Swedish-Talbanken/*.conllu"
     word_order: "SVO"
-    contributor: "Kritnandan"
+    contributor: "Team"
 
   da:
     name: "Danish"
@@ -89,7 +89,7 @@ languages:
     treebank: "UD_Danish-DDT"
     conllu_glob: "UD_Danish-DDT/*.conllu"
     word_order: "SVO"
-    contributor: "Kritnandan"
+    contributor: "Team"
 
   "no":
     name: "Norwegian"
@@ -98,7 +98,7 @@ languages:
     treebank: "UD_Norwegian-Bokmaal"
     conllu_glob: "UD_Norwegian-Bokmaal/*.conllu"
     word_order: "SVO"
-    contributor: "Kritnandan"
+    contributor: "Team"
 
   zh:
     name: "Chinese"
@@ -107,7 +107,7 @@ languages:
     treebank: "UD_Chinese-GSD"
     conllu_glob: "UD_Chinese-GSD/*.conllu"
     word_order: "SVO"
-    contributor: "Kritnandan"
+    contributor: "Team"
 
   id:
     name: "Indonesian"
@@ -116,7 +116,7 @@ languages:
     treebank: "UD_Indonesian-GSD"
     conllu_glob: "UD_Indonesian-GSD/*.conllu"
     word_order: "SVO"
-    contributor: "Kritnandan"
+    contributor: "Team"
 
   vi:
     name: "Vietnamese"
@@ -125,7 +125,7 @@ languages:
     treebank: "UD_Vietnamese-VTB"
     conllu_glob: "UD_Vietnamese-VTB/*.conllu"
     word_order: "SVO"
-    contributor: "Kritnandan"
+    contributor: "Team"
 
   th:
     name: "Thai"
@@ -134,7 +134,7 @@ languages:
     treebank: "UD_Thai-PUD"
     conllu_glob: "UD_Thai-PUD/*.conllu"
     word_order: "SVO"
-    contributor: "Kritnandan"
+    contributor: "Team"
 
   yo:
     name: "Yoruba"
@@ -143,7 +143,7 @@ languages:
     treebank: "UD_Yoruba-YTB"
     conllu_glob: "UD_Yoruba-YTB/*.conllu"
     word_order: "SVO"
-    contributor: "Kritnandan"
+    contributor: "Team"
 
   wo:
     name: "Wolof"
@@ -152,7 +152,7 @@ languages:
     treebank: "UD_Wolof-WTB"
     conllu_glob: "UD_Wolof-WTB/*.conllu"
     word_order: "SVO"
-    contributor: "Asif Nawaz"
+    contributor: "Team"
 
   ca:
     name: "Catalan"
@@ -161,7 +161,7 @@ languages:
     treebank: "UD_Catalan-AnCora"
     conllu_glob: "UD_Catalan-AnCora/*.conllu"
     word_order: "SVO"
-    contributor: "Asif Nawaz"
+    contributor: "Team"
 
   gl:
     name: "Galician"
@@ -170,7 +170,7 @@ languages:
     treebank: "UD_Galician-CTG"
     conllu_glob: "UD_Galician-CTG/*.conllu"
     word_order: "SVO"
-    contributor: "Asif Nawaz"
+    contributor: "Team"
 
   # ── SOV ─────────────────────────────────────────────────
   hi:
@@ -180,7 +180,7 @@ languages:
     treebank: "UD_Hindi-HDTB"
     conllu_glob: "UD_Hindi-HDTB/*.conllu"
     word_order: "SOV"
-    contributor: "Asif Nawaz"
+    contributor: "Team"
 
   ja:
     name: "Japanese"
@@ -189,7 +189,7 @@ languages:
     treebank: "UD_Japanese-GSD"
     conllu_glob: "UD_Japanese-GSD/*.conllu"
     word_order: "SOV"
-    contributor: "Asif Nawaz"
+    contributor: "Team"
 
   ko:
     name: "Korean"
@@ -198,7 +198,7 @@ languages:
     treebank: "UD_Korean-GSD"
     conllu_glob: "UD_Korean-GSD/*.conllu"
     word_order: "SOV"
-    contributor: "Asif Nawaz"
+    contributor: "Team"
 
   tr:
     name: "Turkish"
@@ -207,7 +207,7 @@ languages:
     treebank: "UD_Turkish-IMST"
     conllu_glob: "UD_Turkish-IMST/*.conllu"
     word_order: "SOV"
-    contributor: "Asif Nawaz"
+    contributor: "Team"
 
   fa:
     name: "Persian"
@@ -216,7 +216,7 @@ languages:
     treebank: "UD_Persian-Seraji"
     conllu_glob: "UD_Persian-Seraji/*.conllu"
     word_order: "SOV"
-    contributor: "Saurabh Kumar"
+    contributor: "Team"
 
   bn:
     name: "Bengali"
@@ -225,7 +225,7 @@ languages:
     treebank: "UD_Bengali-BRU"
     conllu_glob: "UD_Bengali-BRU/*.conllu"
     word_order: "SOV"
-    contributor: "Saurabh Kumar"
+    contributor: "Team"
 
   ta:
     name: "Tamil"
@@ -234,7 +234,7 @@ languages:
     treebank: "UD_Tamil-TTB"
     conllu_glob: "UD_Tamil-TTB/*.conllu"
     word_order: "SOV"
-    contributor: "Saurabh Kumar"
+    contributor: "Team"
 
   te:
     name: "Telugu"
@@ -243,7 +243,7 @@ languages:
     treebank: "UD_Telugu-MTG"
     conllu_glob: "UD_Telugu-MTG/*.conllu"
     word_order: "SOV"
-    contributor: "Saurabh Kumar"
+    contributor: "Team"
 
   mr:
     name: "Marathi"
@@ -252,7 +252,7 @@ languages:
     treebank: "UD_Marathi-UFAL"
     conllu_glob: "UD_Marathi-UFAL/*.conllu"
     word_order: "SOV"
-    contributor: "Saurabh Kumar"
+    contributor: "Team"
 
   ml:
     name: "Malayalam"
@@ -261,7 +261,7 @@ languages:
     treebank: "UD_Malayalam-UFAL"
     conllu_glob: "UD_Malayalam-UFAL/*.conllu"
     word_order: "SOV"
-    contributor: "Saurabh Kumar"
+    contributor: "Team"
 
   gu:
     name: "Gujarati"
@@ -270,7 +270,7 @@ languages:
     treebank: "UD_Gujarati-GujTB"
     conllu_glob: "UD_Gujarati-GujTB/*.conllu"
     word_order: "SOV"
-    contributor: "Saurabh Kumar"
+    contributor: "Team"
 
   eu:
     name: "Basque"
@@ -279,7 +279,7 @@ languages:
     treebank: "UD_Basque-BDT"
     conllu_glob: "UD_Basque-BDT/*.conllu"
     word_order: "SOV"
-    contributor: "Midhun Manoj"
+    contributor: "Team"
 
   # ── Free / Mixed ─────────────────────────────────────────
   hu:
@@ -289,7 +289,7 @@ languages:
     treebank: "UD_Hungarian-Szeged"
     conllu_glob: "UD_Hungarian-Szeged/*.conllu"
     word_order: "Free_SOV"
-    contributor: "Midhun Manoj"
+    contributor: "Team"
 
   fi:
     name: "Finnish"
@@ -298,7 +298,7 @@ languages:
     treebank: "UD_Finnish-TDT"
     conllu_glob: "UD_Finnish-TDT/*.conllu"
     word_order: "Free_SVO"
-    contributor: "Midhun Manoj"
+    contributor: "Team"
 
   ru:
     name: "Russian"
@@ -307,7 +307,7 @@ languages:
     treebank: "UD_Russian-SynTagRus"
     conllu_glob: "UD_Russian-SynTagRus/*.conllu"
     word_order: "Free"
-    contributor: "Midhun Manoj"
+    contributor: "Team"
 
   pl:
     name: "Polish"
@@ -316,7 +316,7 @@ languages:
     treebank: "UD_Polish-LFG"
     conllu_glob: "UD_Polish-LFG/*.conllu"
     word_order: "Free"
-    contributor: "Midhun Manoj"
+    contributor: "Team"
 
   cs:
     name: "Czech"
@@ -325,7 +325,7 @@ languages:
     treebank: "UD_Czech-PDT"
     conllu_glob: "UD_Czech-PDT/*.conllu"
     word_order: "Free"
-    contributor: "Midhun Manoj"
+    contributor: "Team"
 
   et:
     name: "Estonian"
@@ -334,7 +334,7 @@ languages:
     treebank: "UD_Estonian-EDT"
     conllu_glob: "UD_Estonian-EDT/*.conllu"
     word_order: "Free_SVO"
-    contributor: "Midhun Manoj"
+    contributor: "Team"
 
   # ── VSO ─────────────────────────────────────────────────
   ar:
@@ -344,7 +344,7 @@ languages:
     treebank: "UD_Arabic-PADT"
     conllu_glob: "UD_Arabic-PADT/*.conllu"
     word_order: "VSO"
-    contributor: "Kritnandan"
+    contributor: "Team"
 
   ga:
     name: "Irish"
@@ -353,7 +353,7 @@ languages:
     treebank: "UD_Irish-IDT"
     conllu_glob: "UD_Irish-IDT/*.conllu"
     word_order: "VSO"
-    contributor: "Asif Nawaz"
+    contributor: "Team"
 
   cy:
     name: "Welsh"
@@ -362,7 +362,7 @@ languages:
     treebank: "UD_Welsh-CCG"
     conllu_glob: "UD_Welsh-CCG/*.conllu"
     word_order: "VSO"
-    contributor: "Saurabh Kumar"
+    contributor: "Team"
 
   tl:
     name: "Tagalog"
@@ -371,22 +371,22 @@ languages:
     treebank: "UD_Tagalog-TRG"
     conllu_glob: "UD_Tagalog-TRG/*.conllu"
     word_order: "VSO_VOS"
-    contributor: "Saurabh Kumar"
+    contributor: "Team"
 
 # ── Contributor assignments (for distributed execution) ────
 contributors:
-  "Abhijit Dalai":
+  "Team":
     roll: "220030"
     languages: [en, fr, es, pt, it, de, nl]
-  "Kritnandan":
+  "Team":
     roll: "220550"
     languages: [sv, da, no, zh, id, vi, th, yo, ar]
-  "Asif Nawaz":
+  "Team":
     roll: "220246"
     languages: [wo, ca, gl, hi, ja, ko, tr, ga]
-  "Saurabh Kumar":
+  "Team":
     roll: "220989"
     languages: [fa, bn, ta, te, mr, ml, gu, cy, tl]
-  "Midhun Manoj":
+  "Team":
     roll: "220647"
     languages: [eu, hu, fi, ru, pl, cs, et]

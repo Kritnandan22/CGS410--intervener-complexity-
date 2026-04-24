@@ -13,10 +13,10 @@ pip install -r requirements.txt
 python -m spacy download en_core_web_sm   # for LLM comparison
 
 # 2. Download your treebanks
-python scripts/download_treebanks.py --contributor "Abhijit Dalai"
+python scripts/download_treebanks.py --contributor "Team"
 
 # 3. Run your languages
-python scripts/run_all.py --contributor "Abhijit Dalai"
+python scripts/run_all.py --contributor "Team"
 ```
 
 ---
@@ -84,7 +84,7 @@ python -m spacy download en_core_web_sm
 ### Step 3: Download Your Treebanks
 ```bash
 # Replace with your actual name
-python scripts/download_treebanks.py --contributor "Your Name"
+python scripts/download_treebanks.py --contributor "Team"
 
 # Or for specific languages:
 python scripts/download_treebanks.py --languages en fr hi
@@ -94,7 +94,7 @@ Treebanks will be downloaded to `./treebanks/`.
 ### Step 4: Run Your Languages
 ```bash
 # Run all your assigned languages
-python scripts/run_all.py --contributor "Your Name"
+python scripts/run_all.py --contributor "Team"
 
 # Or individually:
 python scripts/run_language.py --language en
@@ -104,7 +104,7 @@ python scripts/run_language.py --language hi
 python scripts/run_language.py --language en --skip-baseline --skip-llm
 
 # Parallel execution (4 workers):
-python scripts/run_all.py --contributor "Your Name" --parallel 4
+python scripts/run_all.py --contributor "Team" --parallel 4
 ```
 
 ### Step 5: Check Your Outputs

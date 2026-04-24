@@ -4,7 +4,7 @@ run_all.py — Run the pipeline for all languages (or a subset).
 
 Usage:
     python scripts/run_all.py                               # all 40 languages
-    python scripts/run_all.py --contributor "Abhijit Dalai"  # one contributor's languages
+    python scripts/run_all.py --contributor "Team"  # one contributor's languages
     python scripts/run_all.py --languages en fr hi ta        # explicit list
     python scripts/run_all.py --parallel 4                   # 4 parallel workers
 """

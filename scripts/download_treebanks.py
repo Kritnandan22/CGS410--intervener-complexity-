@@ -6,7 +6,7 @@ Uses the Universal Dependencies GitHub releases or direct git cloning.
 Downloads only treebanks for the specified contributor (or all).
 
 Usage:
-    python scripts/download_treebanks.py --contributor "Abhijit Dalai"
+    python scripts/download_treebanks.py --contributor "Team"
     python scripts/download_treebanks.py --languages en fr hi ta
     python scripts/download_treebanks.py --all               # all 40 languages
 """
