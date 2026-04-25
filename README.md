@@ -41,11 +41,8 @@ This repository is engineered for complete reproducibility. The architecture is 
 │   └── (18 other statistical figures highlighting results and correlations)
 │
 ├── report/
-│   ├── CGS410_Report.pdf / .tex     # The authoritative LaTeX compiled submission 
-│   ├── Final_Report.docx            # The raw academic write-up
-│   ├── Final_Results_Explained.md   # Markdown narrative breakdown of the findings
-│   ├── comprehensive_audit_report.md
-│   └── images/                      # Exact source graphics extracted from the .docx report
+│   ├── CGS410_Report.pdf            # The authoritative compiled academic submission 
+│   └── images/                      # Exact source graphics extracted from the data reports
 │       ├── image1.png to image25.png
 │
 ├── scripts/                         # Top-level executable pipeline scripts
