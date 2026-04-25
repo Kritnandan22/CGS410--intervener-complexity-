@@ -43,7 +43,7 @@ This repository is engineered for complete reproducibility. The architecture is 
 ├── report/
 │   ├── CGS410_Report.pdf            # The authoritative compiled academic submission 
 │   └── images/                      # Exact source graphics extracted from the data reports
-│       ├── image1.png to image25.png
+│       ├── image2.png to image25.png
 │
 ├── scripts/                         # Top-level executable pipeline scripts
 │   ├── run_all.py                   # Master execution script to parallelize extraction
@@ -103,7 +103,6 @@ The following key visuals summarize our primary empirical claims directly from t
 All remaining visualization graphs and typological distributions as extracted from the appendix and corpus of our official report.
 
 <p align="center">
-  <img src="report/images/image1.png" alt="Image 1" width="600"><br><em>Global POS Typology Distribution</em><br><br>
   <img src="report/images/image2.png" alt="Image 2" width="600"><br><em>POS Share by Word-Order</em><br><br>
   <img src="report/images/image3.png" alt="Image 3" width="600"><br><em>Structural Weight Mapping</em><br><br>
   <img src="report/images/image4.png" alt="Image 4" width="600"><br><em>Leaf-node mapping</em><br><br>
