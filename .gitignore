@@ -25,3 +25,11 @@ plots/
 # Heavy Data
 treebanks/
 .claude/
+
+# Ignore intermediate/raw report drafts (so they stay local only)
+report/*.docx
+report/*.tex
+report/*.md
+!report/Final_Results_Explained.md
+!report/report_template.md
+report/Image.png
