@@ -375,18 +375,18 @@ languages:
 
 # ── Contributor assignments (for distributed execution) ────
 contributors:
-  "Team":
+  "Team member -1":
     roll: "220030"
-    languages: [en, fr, es, pt, it, de, nl]
-  "Team":
+    languages: [en, fr, es, pt, it, de, nl, ar]
+  "Team member -2":
     roll: "220550"
-    languages: [sv, da, no, zh, id, vi, th, yo, ar]
-  "Team":
+    languages: [sv, da, no, zh, id, vi, th, yo]
+  "Team member -3":
     roll: "220246"
     languages: [wo, ca, gl, hi, ja, ko, tr, ga]
-  "Team":
+  "Team member -4":
     roll: "220989"
-    languages: [fa, bn, ta, te, mr, ml, gu, cy, tl]
-  "Team":
+    languages: [fa, bn, ta, te, mr, ml, gu, cy]
+  "Team member -5":
     roll: "220647"
-    languages: [eu, hu, fi, ru, pl, cs, et]
+    languages: [eu, hu, fi, ru, pl, cs, et, tl]
