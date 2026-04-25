@@ -10,12 +10,12 @@
 
 <br/>
 
-## 📖 Overview
+##  Overview
 When two grammatically related words are separated in a sentence, the words between them are called **interveners**. This computational linguistic study investigates whether natural languages tend to minimize the structural complexity of these interveners, much like how they universally minimize dependency length. 
 
 By parsing over **24.3 million intervener tokens** across 40 typologically diverse languages using Universal Dependencies (UD v2.13), this study computationally validates dependency length constraints, machine learning structural predictability, and emergent LLM (GPT-2) syntactic alignment.
 
-## 🚀 Key Theoretical Findings
+##  Key Theoretical Findings
 
 1. **Dependency Length Minimization (DLM) is Universal**: Across all 40 languages, dependencies are significantly shorter than random configurations.
 2. **Intervener Complexity Minimization (ICM) is a Weak Trend**: Contrary to DLM, 37.5% of languages actually contradict ICM, proving it is not a universal cognitive constraint but rather subordinated to rigid morphosyntactic word-order rules.
@@ -24,7 +24,7 @@ By parsing over **24.3 million intervener tokens** across 40 typologically diver
 
 ---
 
-## 📂 Project Structure
+##  Project Structure
 This repository is engineered for complete reproducibility. The architecture is split into modular execution pipelines to separate data fetching, metric extraction, and machine learning components.
 
 ```text
@@ -82,7 +82,7 @@ This repository is engineered for complete reproducibility. The architecture is 
 
 ---
 
-## 📊 Core Visual Learnings
+##  Core Visual Learnings
 
 The following key visuals summarize our primary empirical claims directly from the official report data.
 
