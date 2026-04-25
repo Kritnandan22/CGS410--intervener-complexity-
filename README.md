@@ -28,28 +28,59 @@ By parsing over **24.3 million intervener tokens** across 40 typologically diver
 This repository is engineered for complete reproducibility. The architecture is split into modular execution pipelines to separate data fetching, metric extraction, and machine learning components.
 
 ```text
-├── config/                  # Configuration YAMLs
-│   ├── hyperparameters.yaml # Thresholds and mathematical weights for complexity scoring
-│   └── languages.yaml       # Typological metadata covering all 40 languages (SOV, SVO, etc.)
+├── config/
+│   ├── config.yaml                  # Hyperparameters and algorithm weights
+│   └── languages.yaml               # Typological tracking (SOV, SVO, etc.) for 40 languages
 │
-├── scripts/                 # Top-level executable scripts
-│   ├── download_treebanks.py# Fetches Universal Dependencies (UD v2.13) data subsets natively
-│   ├── run_all.py           # Master execution script to parallelize extraction
-│   ├── run_language.py      # Core parser script that targets individual languages
-│   ├── merge_all_results.py # Aggregates all distributed outputs into global CSV datasets
-│   └── generate_report_figures.py # Main visualization driver mapping data to PNG
+├── notebooks/
+│   └── analysis.ipynb               # Exploratory logic and draft data inspection
 │
-├── src/                     # Core computational codebase
-│   ├── core/                # Parsing algorithms and CoNLL-U structure tree handlers
-│   ├── ml/                  # Stratified classification modules (Random Forest, Gradient Boosting)
-│   ├── synthetic/           # Permutation constraint generators for random baseline algorithms
-│   └── llm/                 # Next-word-prediction integration utilizing HuggingFace transformers
+├── plots/report_figures/            # 20 pre-generated, publication-ready analytical PNG figures
+│   ├── fig01_icm_vs_dlm_zscores.png 
+│   ├── fig20_executive_summary_dashboard.png 
+│   └── (18 other statistical figures highlighting results and correlations)
 │
-├── report/                  # Documentation and Official Academic Write-ups
-│   ├── Final_Report.docx    # The authoritative submission document
-│   └── images/              # Extracted native visual documentation elements embedded below
+├── report/
+│   ├── CGS410_Report.pdf / .tex     # The authoritative LaTeX compiled submission 
+│   ├── Final_Report.docx            # The raw academic write-up
+│   ├── Final_Results_Explained.md   # Markdown narrative breakdown of the findings
+│   ├── comprehensive_audit_report.md
+│   └── images/                      # Exact source graphics extracted from the .docx report
+│       ├── image1.png to image25.png
 │
-└── README.md                # Entry-point repository guide (this file)
+├── scripts/                         # Top-level executable pipeline scripts
+│   ├── run_all.py                   # Master execution script to parallelize extraction
+│   ├── run_language.py              # Core parser script pointing at an individual language
+│   ├── merge_all_results.py         # Aggregates distributed outputs into global CSV datasets
+│   ├── generate_report_figures.py   # Main visualization driver mapping data to PNG
+│   ├── global_analysis.py           # Global statistical tester (ANOVA, Mann-Whitney)
+│   ├── download_treebanks.py        # Fetches Universal Dependencies (UD v2.13) natively
+│   └── generate_missing_global_figs.py
+│
+├── src/                             # Core computational codebase
+│   ├── baselines/                   # Theoretical baseline generation
+│   │   ├── synthetic.py, random_trees.py, projective.py, grammar_constrained.py
+│   ├── features/                    # Linguistic property extraction on text streams
+│   │   ├── basic.py, structural.py, advanced.py
+│   ├── llm/                         # GPT-2 validation algorithms
+│   │   ├── generator.py, comparator.py
+│   ├── metrics/                     
+│   │   └── complexity.py            # Implementation of the C(w) scoring formula
+│   ├── ml/                          # Classifiers mapping features to intervals
+│   │   ├── models.py, evaluation.py
+│   ├── parsing/                     # Dependency tree mapping and manipulation
+│   │   ├── tree.py, dependency.py
+│   ├── representation/              
+│   │   ├── clustering.py, embeddings.py, graph_encoder.py
+│   ├── statistics/                  
+│   │   ├── distributions.py, hypothesis.py
+│   ├── output/                      # CSV writers -> writer.py
+│   ├── utils/                       # Handlers -> helpers.py, logging_utils.py
+│   └── visualization/               # Core chart definitions -> plots.py
+│
+├── requirements.txt                 # Application dependencies
+├── README.md                        # This project documentation
+└── CGS410_220030_Course_Project_Proposal.pdf
 ```
 
 ---
