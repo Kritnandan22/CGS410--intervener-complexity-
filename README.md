@@ -3,14 +3,22 @@
 
 This repository contains the data pipelines, hypothesis testing scripts, and visualization logic for our cross-linguistic study on Intervener Complexity Minimization (ICM) across 40 languages using Universal Dependencies (UD v2.13) treebanks.
 
+![Executive Summary Dashboard](plots/report_figures/fig20_executive_summary_dashboard.png)
+
 ## Documentation & Report
 - Our final academic report is available in the [`report/`](report/) directory as `Final_Report.docx`.
 - High-quality, publication-ready figures (DLM vs ICM, Typological clustering, LLM JS Divergence) are generated under `plots/report_figures/`.
 - Additional metric interpretations and result explanations are available in `report/Final_Results_Explained.md`.
 
 ## Key Findings
+
+![ICM vs DLM Z-Scores](plots/report_figures/fig01_icm_vs_dlm_zscores.png)
+
 1. **Dependency Length Minimization (DLM)** acts as a strong universal constraint across all 40 surveyed languages.
 2. **Intervener Complexity Minimization (ICM)** is, conversely, a weak trend. It is directly contradicted by 37.5% of the sampled languages, indicating it is subordinated to word-order rules.
+
+![GPT-2 Baseline Comparison](plots/report_figures/fig19_gpt2_distribution_comparison.png)
+
 3. **LLM Distribution Alignment**: Autoregressive models (GPT-2) natively scale structural complexity bounds to precisely match human empirical text distributions without explicit syntactic rule programming.
 4. **Methodological Rigor**: We document and correct data leakage in sequence classification (F1 ~0.83) alongside treebank-specific tokenization anomalies (e.g., Arabic PADT). 
 
